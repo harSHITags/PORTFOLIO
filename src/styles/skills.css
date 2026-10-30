@@ -1,0 +1,86 @@
+.skills-head { max-width: 720px; margin-bottom: clamp(36px, 5vw, 60px); }
+
+/* ---- Tree ---- */
+.tree { --rail: color-mix(in srgb, var(--muted) 45%, var(--line)); --gap: clamp(16px, 2vw, 28px); position: relative; }
+
+.root { position: relative; display: flex; justify-content: center; padding-bottom: 34px; }
+.root span {
+  position: relative; z-index: 1; padding: 16px 44px; border: 1px solid var(--line); border-radius: 14px;
+  font: 800 1.15rem var(--display); letter-spacing: 0.04em; text-transform: uppercase;
+  background: linear-gradient(150deg, var(--surface), var(--bg2));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--a) 10%, transparent), 0 24px 50px -30px var(--glow);
+}
+/* stem under the root */
+.root::after { content: ''; position: absolute; left: 50%; bottom: 0; width: 2px; height: 34px; margin-left: -1px; background: var(--rail); transform-origin: top; transform: scaleY(0); transition: transform 0.5s var(--ease) 0.2s; }
+
+.branches { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); align-items: start; padding-top: 30px; }
+/* horizontal rail from centre of column 1 to centre of column 3 */
+.branches::before { content: ''; position: absolute; top: 0; left: calc((100% - 2 * var(--gap)) / 6); right: calc((100% - 2 * var(--gap)) / 6); height: 2px; background: var(--rail); transform-origin: center; transform: scaleX(0); transition: transform 0.8s var(--ease) 0.6s; }
+/* drop from the rail into each card */
+.branch { position: relative; }
+.branch::before { content: ''; position: absolute; top: -30px; left: 50%; width: 2px; height: 30px; margin-left: -1px; background: var(--rail); transform-origin: top; transform: scaleY(0); transition: transform 0.4s var(--ease) 1.2s; }
+.branch-card { opacity: 0; translate: 0 18px; transition: opacity 0.7s ease 1.3s, translate 0.7s var(--ease) 1.3s; }
+
+.tree.in .root::after { transform: scaleY(1); }
+.tree.in .branches::before { transform: scaleX(1); }
+.tree.in .branch::before { transform: scaleY(1); }
+.tree.in .branch-card { opacity: 1; translate: 0 0; }
+.tree.in .branch:nth-child(2) .branch-card { transition-delay: 1.42s; }
+.tree.in .branch:nth-child(3) .branch-card { transition-delay: 1.54s; }
+.tree.in .branch:nth-child(4) .branch-card { transition-delay: 1.66s; }
+.tree.in .branch:nth-child(5) .branch-card { transition-delay: 1.78s; }
+.branch:nth-child(2)::before { transition-delay: 1.3s; }
+.branch:nth-child(3)::before { transition-delay: 1.4s; }
+.branch:nth-child(4)::before { transition-delay: 1.5s; }
+.branch:nth-child(5)::before { transition-delay: 1.6s; }
+
+.branch-card { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 24px; padding: clamp(18px, 1.9vw, 26px); background: linear-gradient(165deg, var(--surface), color-mix(in srgb, var(--surface) 65%, var(--bg))); }
+.branch-card::before { content: ''; position: absolute; inset: -1px -1px auto; height: 110px; background: radial-gradient(60% 100% at 50% 0%, var(--g, var(--glow)), transparent); pointer-events: none; }
+.branch-card > * { position: relative; }
+.br-backend .branch-card { --g: rgba(79, 140, 255, 0.34); border-color: color-mix(in srgb, var(--a) 40%, var(--line)); }
+.br-ai .branch-card { --g: rgba(56, 217, 255, 0.24); }
+.branch-card h3 { font-size: 1.25rem; margin-bottom: 4px; }
+.branch-card .cap { color: var(--muted); font-size: 0.86rem; margin: 0 0 20px; }
+.sg + .sg { margin-top: 20px; }
+.sg h4 { margin: 0 0 10px; font: 500 0.72rem var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--b); }
+.br-backend .sg { margin-top: 22px; }
+.br-data .branch-card { --g: rgba(120, 200, 160, 0.22); }
+.br-platform .branch-card { --g: rgba(79, 140, 255, 0.22); }
+.br-tools .branch-card { --g: rgba(56, 217, 255, 0.18); }
+
+/* Larger logos and labels in the skills section */
+.tree .tech { padding: 7px 13px 7px 9px; font-size: 0.87rem; gap: 9px; }
+.tree .tech .lg { width: 25px; height: 25px; }
+.tree .flow .tech { padding: 6px 11px 6px 8px; font-size: 0.78rem; }
+.tree .flow .tech .lg { width: 20px; height: 20px; }
+
+.plates { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 480px) { .plates { grid-template-columns: 1fr; } }
+.plate-card {
+  --rx: 0deg; --ry: 0deg;
+  border: 1px solid var(--line); border-radius: 20px; padding: 28px 12px 22px; text-align: center;
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
+  transform: perspective(800px) rotateX(var(--rx)) rotateY(var(--ry)); transition: transform 0.2s, border-color 0.3s;
+}
+.plate-card:hover { border-color: var(--b); }
+.plate-card .orb { width: 88px; height: 88px; margin: 0 auto 14px; display: grid; place-items: center; border-radius: 50%; border: 1px dashed color-mix(in srgb, var(--b) 45%, transparent); }
+.plate-card .lg { width: 52px; height: 52px; }
+.plate-card b { display: block; font: 800 1.2rem var(--display); }
+.plate-card span { color: var(--muted); font-size: 0.76rem; display: block; }
+.ship { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
+.ship p { font: 400 0.74rem var(--mono); color: var(--muted); margin: 0 0 12px; }
+
+/* Tablet / mobile: single column with a spine on the left */
+@media (max-width: 980px) {
+  .root { justify-content: flex-start; padding-bottom: 28px; }
+  .root::after { left: 22px; margin-left: -1px; height: 28px; }
+  .branches { grid-template-columns: 1fr; padding-top: 0; padding-left: 44px; row-gap: 22px; }
+  .branches::before { top: 0; bottom: 36px; left: 21px; right: auto; width: 2px; height: auto; transform-origin: top; transform: scaleY(0); }
+  .tree.in .branches::before { transform: scaleY(1); }
+  .branch::before { top: 34px; left: -23px; width: 23px; height: 2px; margin: 0; transform-origin: left; transform: scaleX(0); }
+  .tree.in .branch::before { transform: scaleX(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .root::after, .branches::before, .branch::before { transform: none !important; }
+  .branch-card { opacity: 1; translate: 0 0; }
+}

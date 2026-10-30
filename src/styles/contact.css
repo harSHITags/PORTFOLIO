@@ -1,0 +1,12 @@
+.final { padding-top: 60px; }
+.cbox { position: relative; border: 1px solid var(--line); border-radius: 34px; padding: clamp(44px, 8vw, 96px) 24px clamp(120px, 14vw, 180px); text-align: center; overflow: hidden; background: radial-gradient(70% 80% at 50% 0%, var(--glow), transparent 70%), var(--surface); }
+.cbox h2 { font-size: clamp(2.2rem, 6.4vw, 4.4rem); max-width: 15ch; margin-inline: auto; }
+.cbox .lede { margin: 16px auto 28px; }
+.cbox .cta { justify-content: center; position: relative; z-index: 1; }
+.mail { display: inline-block; font: 800 clamp(1.1rem, 3.6vw, 2rem) var(--display); letter-spacing: -0.02em; text-decoration: none; margin-bottom: 26px; position: relative; z-index: 1; background: linear-gradient(100deg, var(--a), var(--b)); -webkit-background-clip: text; background-clip: text; color: transparent; word-break: break-all; }
+.mail:hover { filter: brightness(1.2); }
+.cbox .trees { height: clamp(70px, 10vw, 120px); }
+.lights { position: absolute; left: 0; right: 0; bottom: 0; height: 60%; background: radial-gradient(40% 80% at 20% 100%, rgba(56, 217, 255, 0.22), transparent), radial-gradient(40% 80% at 80% 100%, rgba(79, 140, 255, 0.25), transparent); animation: glow-pulse 6s ease-in-out infinite alternate; }
+
+.site-footer { border-top: 1px solid var(--line); padding: 26px 0; color: var(--muted); font-size: 0.86rem; margin-top: 40px; }
+.site-footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }

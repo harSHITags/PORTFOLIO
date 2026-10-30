@@ -1,0 +1,74 @@
+/* Original palette, preserved. Dark is the default; light overrides below. */
+:root,
+:root[data-theme='dark'] {
+  --bg: #060a1a;
+  --bg2: #0a1129;
+  --surface: #0e1733;
+  --line: #1c2a56;
+  --text: #e8edff;
+  --muted: #8f9dcc;
+  --a: #4f8cff;
+  --b: #38d9ff;
+  --glow: rgba(79, 140, 255, 0.22);
+  --tree: #0a1430;
+  --lg1: #7b8cff;
+  --lg2: #00aeef;
+
+  /* Portrait hero blob: aligned with primary accent --a and secondary accent --b */
+  --blob-a: #1a44af;
+  --blob-m: #4f8cff;
+  --blob-b: #22c3ec;
+  --blob-back: rgba(79, 140, 255, 0.16);
+  --blob-back2: rgba(56, 217, 255, 0.16);
+  --blob-line: rgba(56, 217, 255, 0.45);
+  --blob-glow: rgba(79, 140, 255, 0.42);
+  --blob-shadow: #020512;
+  --blob-dot: rgba(214, 238, 255, 0.8);
+  --blob-dash: #38d9ff;
+  --blob-sphere-0: #e6f7ff;
+  --blob-sphere-1: #4ba6f8;
+  --blob-sphere-2: #1e52c8;
+  --blob-sphere-shadow: rgba(2, 8, 24, 0.45);
+  --blob-rim: rgba(56, 217, 255, 0.22);
+
+  --display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --body: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  --bg: #f3f7ff;
+  --bg2: #e8f0ff;
+  --surface: #ffffff;
+  --line: #d3def5;
+  --text: #0e1733;
+  --muted: #53628f;
+  --a: #2563eb;
+  --b: #0891b2;
+  --glow: rgba(37, 99, 235, 0.14);
+  --tree: #c9d9f7;
+  --lg1: #2d388a;
+  --lg2: #00aeef;
+
+  /* Portrait hero blob: light mode variations matching --a and --b */
+  --blob-a: #1d4ed8;
+  --blob-m: #2563eb;
+  --blob-b: #0891b2;
+  --blob-back: rgba(37, 99, 235, 0.14);
+  --blob-back2: rgba(8, 145, 178, 0.14);
+  --blob-line: rgba(8, 145, 178, 0.45);
+  --blob-glow: rgba(37, 99, 235, 0.22);
+  --blob-shadow: rgba(14, 23, 51, 0.22);
+  --blob-dot: rgba(255, 255, 255, 0.95);
+  --blob-dash: #0891b2;
+  --blob-sphere-0: #f0f9ff;
+  --blob-sphere-1: #38bdf8;
+  --blob-sphere-2: #1d4ed8;
+  --blob-sphere-shadow: rgba(15, 23, 42, 0.2);
+  --blob-rim: rgba(37, 99, 235, 0.18);
+
+  color-scheme: light;
+}
