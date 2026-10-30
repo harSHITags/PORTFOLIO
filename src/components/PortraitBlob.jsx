@@ -1,125 +1,227 @@
-// Hero illustration, traced from the reference artwork (viewBox 1200 × 1000 = the reference's own pixel space).
+// Hero illustration for a cutout portrait. viewBox 1200 × 1000 (same pixel space as before, so the photo placement is unchanged).
+//
+// Design intent: quiet, editorial, tonal. One deep-navy circle is the hero; everything else is a whisper.
 // Layers, back to front:
-//   1 soft glow · 2 accent shapes · 3 main blob · 4 orbit lines · 5 spheres, dots, dashes, sparkle · 6 the photo cutout
-// The photo is never clipped by the blob. Only its bottom is trimmed, along a curve that follows the
-// crossed forearms (the source photo ends at the hips with a straight edge, which the reference does not show).
-// Pointer parallax uses the --tx / --ty variables written by useTilt on the parent (0 on touch / reduced motion).
+//   1 soft glow · 2 orbit ring (partly hidden by the circle) · 3 offset echo circle · 4 main circle · 5 small accents · 6 photo cutout
+//
+// Why a near-circle: it is the calmest frame for a head-and-shoulders cutout. The head rises above the top edge
+// and the shoulders fill the widest part. Above the circle's widest point the figure is free to overflow it;
+// below that, the figure follows the circle's own outline and fades into the navy (see CROP and the pb-fade mask).
+// The outline is a true circle softened by tiny differences between the four quarters, so it reads as hand-drawn.
+//
+// Colours are CSS variables with built-in fallbacks, so it works with no extra CSS. Override on a parent to retheme:
+//   --blob-a   top highlight of the circle      (dull steel blue)
+//   --blob-m   mid tone                         (slate navy)
+//   --blob-b   base tone                        (deep navy)
+//   --blob-back / --blob-back2   echo circle gradient
+//   --blob-glow   blurred halo      --blob-line   ring + edge lines      --blob-accent   dots
+//   --blob-shadow   drop shadows    --blob-rim   hairline rim light on the figure
+//   --blob-tint   colour the bottom of the figure sinks into (match --blob-b)
+// Pointer parallax uses --tx / --ty written by useTilt on the parent (0 on touch / reduced motion).
 
-// main cobalt-blue → cyan blob: tall rounded top, sloping right edge with a wide bulge, shoulder lobe on the left
+// Main shape: centre (600, 590), radius 400. Each quarter's handle length differs by a few px for a soft, organic edge.
+// Every join is horizontal or vertical, so the outline has no kinks.
 const MAIN =
-  'M740 78C862 80 902 226 962 290C1032 342 1096 404 1088 520C1084 604 1040 644 992 692' +
-  'C930 760 900 852 780 903C680 927 560 902 470 842C380 782 292 762 236 682' +
-  'C190 618 172 556 202 496C232 420 332 360 432 312C522 270 542 200 604 142C642 102 690 78 740 78Z';
+  'M600 190C825 190 1000 365 1000 590C1000 805 820 990 600 990' +
+  'C375 990 200 815 200 590C200 365 385 190 600 190Z';
 
-// translucent background accent shapes
-const LOBE_TOP = 'M248 372C240 236 336 148 470 138C540 133 584 150 606 162C524 220 484 284 402 322C338 352 270 398 248 372Z';
-const LOBE_RIGHT = 'M926 266C1010 250 1092 326 1088 426C1086 448 1060 426 1002 346C972 312 940 292 926 266Z';
-const LOBE_LOW = 'M148 650C128 558 194 556 212 640C284 742 402 800 472 842C380 832 270 822 192 782C150 752 144 702 148 650Z';
+// Vertical nudge for the circle if the head in your cutout sits higher or lower (positive = down).
+const BLOB_Y = 0;
 
-// thin orbit lines
-const ORBIT_LEFT = 'M168 432C176 360 252 326 352 322';
-const ORBIT_TOP = 'M640 102C722 60 836 58 884 122C912 160 918 200 912 224';
-const ORBIT_LOW = 'M198 566C262 700 424 812 560 880C652 916 752 916 842 880C902 856 930 790 942 716';
-const ORBIT_RIGHT = 'M1020 646C1056 684 1070 764 1030 812C992 858 904 890 836 862';
+// Centre of the circle, used for the scale / offset helpers below.
+const CX = 600;
+const CY = 590;
 
-const SPARKLE = 'M0 -30C4 -11 11 -4 30 0C11 4 4 11 0 30C-4 11 -11 4 -30 0C-11 -4 -4 -11 0 -30Z';
-const DOTS = [0, 1, 2, 3, 4].flatMap((c) => [0, 1].map((r) => [944 + c * 23, 448 + r * 26]));
+// Orbit ring: a slightly oval, tilted ring around the circle. Drawn behind it, so only the outer arcs show.
+const RING = { cx: CX, cy: CY, rx: 490, ry: 440, rot: -18 };
 
-// photo placement: the 760 × 848 cutout is scaled by SCALE and placed so the head sits at the upper centre of the blob
+// Dot grid, outside the circle's lower-right edge
+const DOTS = [0, 1, 2, 3].flatMap((c) => [0, 1, 2].map((r) => [1004 + c * 22, 744 + r * 22]));
+
+// Photo placement: the 760 × 848 cutout is scaled and placed so the head sits at the upper centre of the circle
+const PHOTO_W = 760;
+const PHOTO_H = 848;
 const SCALE = 1.05;
 const PHOTO = `translate(198 110) scale(${SCALE})`;
-// bottom trim in photo coordinates: follows the right sleeve underside, the cuffs and the left sleeve
-const TRIM =
-  'M-60 -60H820V540L612 560C602 640 572 722 502 750C440 760 382 752 332 750C300 752 278 768 256 773' +
-  'C222 742 182 714 150 690C118 660 98 620 96 560H-60Z';
 
-const px = (x, y) => ({ transform: `translate(calc(var(--tx, 0) * ${x}px), calc(var(--ty, 0) * ${y}px))` });
+// Photo crop: the figure is free above the circle's widest point (y = CY), so head and shoulders can overflow the
+// circle. Below that line it is clipped to the circle itself. The two sub-paths wind the same way, so they union
+// cleanly, and the join is vertical on both sides: no sliver, no floating cut edge, no kink.
+const CROP = `M-400 -600H1600V${CY}H-400Z` + MAIN;
+
+// Where the bottom of the figure dissolves into the circle (canvas y)
+const FADE_FROM = 800;
+const FADE_TO = 975;
+
+// Extra navy tone laid over the lower part of the figure so it settles into the circle
+const TINT_FROM = 690;
+const TINT_TO = 960;
+const TINT_STRENGTH = 0.4;
+
+const px = (x, y) => ({
+  transform: `translate(calc(var(--tx, 0) * ${x}px), calc(var(--ty, 0) * ${y}px))`,
+  transition: 'transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1)',
+  willChange: 'transform',
+});
+
+// scale around the circle centre, then move by (dx, dy)
+const around = (s, dx = 0, dy = 0) =>
+  `translate(${dx} ${dy}) translate(${CX} ${CY}) scale(${s}) translate(${-CX} ${-CY})`;
+
+const c = (name, fallback) => `var(${name}, ${fallback})`;
 
 export default function PortraitBlob({ src, alt }) {
+  const line = c('--blob-line', '#9db3d1');
+  const accent = c('--blob-accent', '#8aa3c6');
+
+  // the photo is drawn twice (plain + navy tint), so keep its props in one place
+  const photoProps = {
+    href: src,
+    x: 0,
+    y: 0,
+    width: PHOTO_W,
+    height: PHOTO_H,
+    transform: PHOTO,
+    // keeps the cutout's real proportions even if the file is not exactly 760 × 848
+    preserveAspectRatio: 'xMidYMax meet',
+  };
+
   return (
-    <svg className="portrait-svg" viewBox="0 0 1200 1000" role="img" aria-label={alt}>
+    <svg className="portrait-svg" viewBox="0 0 1200 1000" role="img" aria-label={alt} style={{ overflow: 'visible' }}>
       <defs>
-        <linearGradient id="pb-main" gradientUnits="userSpaceOnUse" x1="900" y1="90" x2="330" y2="860">
-          <stop offset="0" style={{ stopColor: 'var(--blob-a)' }} />
-          <stop offset="0.5" style={{ stopColor: 'var(--blob-m)' }} />
-          <stop offset="1" style={{ stopColor: 'var(--blob-b)' }} />
+        {/* circle: dull steel blue at the upper right, falling to deep navy at the base */}
+        <linearGradient id="pb-main" gradientUnits="userSpaceOnUse" x1="860" y1="210" x2="360" y2="990">
+          <stop offset="0" style={{ stopColor: c('--blob-a', '#5f7898') }} />
+          <stop offset="0.48" style={{ stopColor: c('--blob-m', '#2d4566') }} />
+          <stop offset="1" style={{ stopColor: c('--blob-b', '#121f35') }} />
         </linearGradient>
-        <linearGradient id="pb-lobe" gradientUnits="userSpaceOnUse" x1="300" y1="140" x2="200" y2="800">
-          <stop offset="0" style={{ stopColor: 'var(--blob-back)' }} />
-          <stop offset="1" style={{ stopColor: 'var(--blob-back2)' }} />
+        <linearGradient id="pb-back" gradientUnits="userSpaceOnUse" x1="400" y1="160" x2="900" y2="900">
+          <stop offset="0" style={{ stopColor: c('--blob-back', '#4a6385') }} />
+          <stop offset="1" style={{ stopColor: c('--blob-back2', '#1b2d48') }} />
         </linearGradient>
-        <radialGradient id="pb-light" gradientUnits="userSpaceOnUse" cx="760" cy="200" r="460">
-          <stop offset="0" stopColor="#fff" stopOpacity="0.16" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+        {/* a faint light from above, so the circle reads as a soft surface and not a flat fill */}
+        <radialGradient id="pb-light" gradientUnits="userSpaceOnUse" cx="700" cy="270" r="520">
+          <stop offset="0" stopColor="#ffffff" stopOpacity="0.1" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
         </radialGradient>
-        <radialGradient id="pb-sphere" cx="0.3" cy="0.26" r="0.9">
-          <stop offset="0" stopColor="var(--blob-sphere-0)" />
-          <stop offset="0.45" stopColor="var(--blob-sphere-1)" />
-          <stop offset="1" stopColor="var(--blob-sphere-2)" />
-        </radialGradient>
+        {/* base falloff: deepens the bottom of the circle */}
+        <linearGradient id="pb-base" gradientUnits="userSpaceOnUse" x1="0" y1="720" x2="0" y2="990">
+          <stop offset="0" stopColor="#0a1426" stopOpacity="0" />
+          <stop offset="1" stopColor="#0a1426" stopOpacity="0.38" />
+        </linearGradient>
+
+        {/* figure mask: fully visible down to FADE_FROM, then dissolves into the circle by FADE_TO */}
+        <linearGradient id="pb-fade-grad" gradientUnits="userSpaceOnUse" x1="0" y1={FADE_FROM} x2="0" y2={FADE_TO}>
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset="1" stopColor="#000000" />
+        </linearGradient>
+        <mask id="pb-fade" maskUnits="userSpaceOnUse" x="-400" y="-600" width="2000" height="1700">
+          <rect x="-400" y="-600" width="2000" height="1700" fill="url(#pb-fade-grad)" />
+        </mask>
+
+        {/* tint mask: how strongly the navy tone shows on the figure, growing toward the bottom */}
+        <linearGradient id="pb-tint-grad" gradientUnits="userSpaceOnUse" x1="0" y1={TINT_FROM} x2="0" y2={TINT_TO}>
+          <stop offset="0" stopColor="#ffffff" stopOpacity="0" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity={TINT_STRENGTH} />
+        </linearGradient>
+        <mask id="pb-tint-mask" maskUnits="userSpaceOnUse" x="-400" y="-600" width="2000" height="1700">
+          <rect x="-400" y="-600" width="2000" height="1700" fill="url(#pb-tint-grad)" />
+        </mask>
+        {/* flat navy silhouette of the photo (same alpha, solid colour) */}
+        <filter id="pb-tint" x="0" y="0" width="100%" height="100%">
+          <feFlood style={{ floodColor: c('--blob-tint', '#0a1426') }} result="navy" />
+          <feComposite in="navy" in2="SourceAlpha" operator="in" />
+        </filter>
+
         <filter id="pb-glow" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="46" />
+          <feGaussianBlur stdDeviation="52" />
         </filter>
         <filter id="pb-shadow-main" x="-20%" y="-20%" width="140%" height="150%">
-          <feDropShadow dx="0" dy="30" stdDeviation="28" floodColor="var(--blob-shadow)" floodOpacity="0.45" />
+          <feDropShadow dx="0" dy="26" stdDeviation="30" style={{ floodColor: c('--blob-shadow', '#050c1a') }} floodOpacity="0.45" />
         </filter>
-        <filter id="pb-sphere-shadow" x="-40%" y="-40%" width="180%" height="190%">
-          <feDropShadow dx="0" dy="12" stdDeviation="11" floodColor="var(--blob-sphere-shadow)" floodOpacity="0.38" />
-        </filter>
-        {/* figure: a hairline cool rim, then a soft contact shadow */}
+        {/* figure: a very faint cool rim, then a soft contact shadow */}
         <filter id="pb-figure" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow in="SourceGraphic" dx="-1.2" dy="-1" stdDeviation="0.5" floodColor="var(--blob-rim)" floodOpacity="0.2" result="rim" />
-          <feDropShadow in="rim" dx="0" dy="20" stdDeviation="16" floodColor="var(--blob-shadow)" floodOpacity="0.4" />
+          <feDropShadow in="SourceGraphic" dx="-1" dy="-0.8" stdDeviation="0.6" style={{ floodColor: c('--blob-rim', '#b7c9e2') }} floodOpacity="0.1" result="rim" />
+          <feDropShadow in="rim" dx="0" dy="20" stdDeviation="16" style={{ floodColor: c('--blob-shadow', '#050c1a') }} floodOpacity="0.4" />
         </filter>
-        <clipPath id="pb-trim">
-          <path d={TRIM} />
+        <clipPath id="pb-fit" clipPathUnits="userSpaceOnUse">
+          <path d={CROP} clipRule="nonzero" />
         </clipPath>
       </defs>
 
-      {/* 1 · glow */}
-      <path d={MAIN} className="pb-glow" filter="url(#pb-glow)" transform="translate(0 50) scale(0.96) translate(24 34)" />
+      <g transform={`translate(0 ${BLOB_Y})`}>
+        {/* 1 · glow */}
+        <path
+          d={MAIN}
+          filter="url(#pb-glow)"
+          style={{ fill: c('--blob-glow', '#3d5a85') }}
+          opacity="0.32"
+          transform={around(0.94, 0, 44)}
+        />
 
-      {/* 2 · accent shapes behind main blob */}
-      <g style={px(14, 8)}>
-        <path d={LOBE_TOP} fill="url(#pb-lobe)" />
-        <path d={LOBE_RIGHT} fill="url(#pb-lobe)" />
-        <path d={LOBE_LOW} fill="url(#pb-lobe)" />
-      </g>
-
-      {/* 3 · main blob */}
-      <g style={px(-4, -3)}>
-        <path d={MAIN} fill="url(#pb-main)" filter="url(#pb-shadow-main)" />
-        <path d={MAIN} fill="url(#pb-light)" />
-        <path d={MAIN} fill="none" className="pb-edge" strokeWidth="2" />
-      </g>
-
-      {/* 4 · orbit lines */}
-      <g style={px(-10, -6)} fill="none" strokeLinecap="round" className="pb-sweep">
-        <path d={ORBIT_LEFT} strokeWidth="2.4" />
-        <path d={ORBIT_TOP} strokeWidth="2.4" />
-        <path d={ORBIT_LOW} strokeWidth="2.6" />
-        <path d={ORBIT_RIGHT} strokeWidth="2.4" />
-      </g>
-
-      {/* 5 · accents */}
-      <g style={px(-9, -5)}>
-        <circle cx="259" cy="244" r="22" fill="url(#pb-sphere)" opacity="0.92" />
-        <circle cx="155" cy="508" r="70" fill="url(#pb-sphere)" filter="url(#pb-sphere-shadow)" />
-        <circle cx="155" cy="508" r="70" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="3" />
-        <circle cx="972" cy="674" r="49" fill="url(#pb-sphere)" filter="url(#pb-sphere-shadow)" />
-        <circle cx="972" cy="674" r="49" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="2.5" />
-        <g className="pb-dots">{DOTS.map(([x, y]) => <circle key={`${x}-${y}`} cx={x} cy={y} r="3.4" />)}</g>
-        <g className="pb-dash" strokeWidth="9" strokeLinecap="round" fill="none">
-          <path d="M968 108L956 174" />
-          <path d="M978 192L1024 150" />
+        {/* 2 · orbit ring: one fine line, mostly hidden behind the circle */}
+        <g style={px(-10, -6)}>
+          <ellipse
+            cx={RING.cx}
+            cy={RING.cy}
+            rx={RING.rx}
+            ry={RING.ry}
+            transform={`rotate(${RING.rot} ${RING.cx} ${RING.cy})`}
+            fill="none"
+            strokeWidth="1.6"
+            style={{ stroke: line }}
+            opacity="0.32"
+          />
         </g>
-        <path d={SPARKLE} transform="translate(1132 590)" className="pb-spark" />
+
+        {/* 3 · echo circle: a smaller translucent copy tucked behind the upper right, plus a fine offset outline lower left */}
+        <g style={px(12, 7)}>
+          <path d={MAIN} fill="url(#pb-back)" opacity="0.5" transform={around(0.9, 62, -46)} />
+          <path
+            d={MAIN}
+            fill="none"
+            strokeWidth="1.6"
+            style={{ stroke: line }}
+            opacity="0.28"
+            transform={around(1.1, -26, 20)}
+          />
+        </g>
+
+        {/* 4 · main circle */}
+        <g style={px(-4, -3)}>
+          <path d={MAIN} fill="url(#pb-main)" filter="url(#pb-shadow-main)" />
+          <path d={MAIN} fill="url(#pb-light)" />
+          <path d={MAIN} fill="url(#pb-base)" />
+          <path d={MAIN} fill="none" strokeWidth="1.5" style={{ stroke: line }} opacity="0.2" />
+        </g>
+
+        {/* 5 · accents: two satellites on the ring and a quiet dot grid */}
+        <g style={px(-9, -5)}>
+          <circle cx="935" cy="250" r="7" style={{ fill: accent }} opacity="0.85" />
+          <circle cx="209" cy="875" r="13" fill="none" strokeWidth="1.6" style={{ stroke: accent }} opacity="0.7" />
+          <g style={{ fill: accent }} opacity="0.4">
+            {DOTS.map(([x, y]) => (
+              <circle key={`${x}-${y}`} cx={x} cy={y} r="2.6" />
+            ))}
+          </g>
+        </g>
       </g>
 
-      {/* 6 · photo cutout, in front of everything; trimmed only along the folded arms */}
+      {/* 6 · photo cutout, in front of everything.
+           Free to overflow the circle above its widest point; below that it follows the circle,
+           dissolves into the navy at the base, and picks up a navy tone so it settles into the surface. */}
       <g filter="url(#pb-figure)">
-        <g style={px(7, 4)}>
-          <image href={src} x="0" y="0" width="760" height="848" transform={PHOTO} clipPath="url(#pb-trim)" preserveAspectRatio="none" />
+        <g transform={`translate(0 ${BLOB_Y})`}>
+          <g style={px(-4, -3)} clipPath="url(#pb-fit)">
+            <g style={px(7, 4)}>
+              <g mask="url(#pb-fade)">
+                <image {...photoProps} />
+                <g mask="url(#pb-tint-mask)">
+                  <image {...photoProps} filter="url(#pb-tint)" />
+                </g>
+              </g>
+            </g>
+          </g>
         </g>
       </g>
     </svg>
