@@ -47,7 +47,6 @@ function CredentialBody({ cert }) {
     );
   }
 
-  
   const unavailable = failed || cert.fileType === 'pending' || (!cert.credentialUrl && !cert.driveUrl && !url);
   return (
     <div className="cert-state">
