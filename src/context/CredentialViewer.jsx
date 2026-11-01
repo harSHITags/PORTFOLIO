@@ -64,6 +64,8 @@ function CredentialBody({ cert }) {
   );
 }
 
+
+
 function CredentialDialog({ id, onClose }) {
   const ref = useRef(null);
   const cert = id ? getCredential(id) : null;
