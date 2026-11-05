@@ -12,6 +12,7 @@ const TREES = {
   },
 };
 
+
 export default function Pines({ variant = 'hero', className = 'trees' }) {
   const t = TREES[variant];
   const id = `pine-${variant}`;
