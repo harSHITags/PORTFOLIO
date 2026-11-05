@@ -12,6 +12,7 @@ import './styles/projects.css';
 import './styles/credentials.css';
 import './styles/contact.css';
 
+
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
