@@ -10,6 +10,7 @@ export default function Education() {
           <span className="kicker">Education</span>
           <h2>Education &amp; credentials</h2>
         </Reveal>
+        
 
         <div className="led">
           {education.map((e, i) => (
