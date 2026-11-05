@@ -14,7 +14,6 @@ export const experience = [
     // ids from src/data/certifications.js; links appear automatically once each has a file or link
     credentials: ['datagami-generative-ai', 'datagami-agentic-ai', 'datagami-devops'],
   },
-  
   {
     when: 'Jun 2025 – Jul 2025',
     title: 'AI/ML Intern',
