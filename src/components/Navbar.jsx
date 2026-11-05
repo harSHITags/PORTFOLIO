@@ -12,6 +12,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const active = useActiveSection(SECTION_IDS);
 
+  
   useEffect(() => {
     const on = () => setScrolled(scrollY > 10);
     on();
