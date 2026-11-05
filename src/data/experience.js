@@ -4,7 +4,7 @@ export const experience = [
     title: 'Generative AI / Agentic AI Intern',
     org: 'Datagami · NASSCOM × IBM Initiative',
     points: [
-      ['Worked on a retail-focused ', 'Retrieval-Augmented Generation (RAG) chatbot', ' using FastAPI, FAISS, and Google Gemini API.'],
+      ['Worked on a retail-focused ', 'Retrieval-Augmented Generation (RAG) chatbot', ' using FastAPI, FAISS, CrewAI and Google Gemini API.'],
       ['Implemented document processing and retrieval workflows to enable context-aware responses from retail documents.'],
       ['Developed a multi-agent workflow using ', 'CrewAI, Groq, and DuckDuckGo', ' for coordinated task execution.'],
       ['Worked on Docker containerization and ', 'GitHub Actions for CI/CD automation', '.'],
