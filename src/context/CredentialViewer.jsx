@@ -59,6 +59,7 @@ function CredentialBody({ cert }) {
             : cert.driveUrl
               ? 'This certificate is available to view on Google Drive.'
               : `This credential is hosted on ${cert.platform || 'the issuer’s site'}. Open it there to see the original.`}
+    
       </p>
     </div>
   );
